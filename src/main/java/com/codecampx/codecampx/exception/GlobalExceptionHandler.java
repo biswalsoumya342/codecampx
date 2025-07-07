@@ -1,5 +1,7 @@
 package com.codecampx.codecampx.exception;
 
+import com.codecampx.codecampx.payload.ApiErrorResponse;
+import com.codecampx.codecampx.payload.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -8,6 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,8 +19,13 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = ResorceNotFoundException.class)
-    public ResponseEntity<String> handleResourceNotFoundException(ResorceNotFoundException ex){
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    public ResponseEntity<ApiErrorResponse> handleResourceNotFoundException(ResorceNotFoundException ex){
+        return new ResponseEntity<>(new ApiErrorResponse(LocalDateTime.now(),ex.getMessage(),HttpStatus.NOT_FOUND.value()), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(value = DuplicateResourceEntryException.class)
+    public ResponseEntity<ApiErrorResponse> handelDuplicateResourceEntryException(DuplicateResourceEntryException ex){
+        return new ResponseEntity<>(new ApiErrorResponse(LocalDateTime.now(),ex.getMessage(),HttpStatus.CONFLICT.value()),HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)

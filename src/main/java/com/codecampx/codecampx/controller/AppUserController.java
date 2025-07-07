@@ -4,6 +4,7 @@ import com.codecampx.codecampx.payload.ApiResponse;
 import com.codecampx.codecampx.payload.AppUserDto;
 import com.codecampx.codecampx.payload.LoginDto;
 import com.codecampx.codecampx.service.AppUserService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,10 +24,10 @@ public class AppUserController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody AppUserDto userDto){
+    public ResponseEntity<?> signup(@Valid @RequestBody AppUserDto userDto){
         service.signup(userDto);
         return new ResponseEntity<>(
-                new ApiResponse(LocalDateTime.now(),"SignUp Successful",true),
+                new ApiResponse(LocalDateTime.now(),"SignUp Successful",HttpStatus.CREATED.value()),
                 HttpStatus.CREATED
         );
     }

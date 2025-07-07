@@ -1,5 +1,6 @@
 package com.codecampx.codecampx.service.impl;
 
+import com.codecampx.codecampx.exception.DuplicateResourceEntryException;
 import com.codecampx.codecampx.model.AppUser;
 import com.codecampx.codecampx.payload.AppUserDto;
 import com.codecampx.codecampx.payload.LoginDto;
@@ -14,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 public class AppUserServiceImpl implements AppUserService {
@@ -34,6 +36,12 @@ public class AppUserServiceImpl implements AppUserService {
 
     @Override
     public void signup(AppUserDto userDto) {
+        Optional<AppUser> foundUserByUserName = repo.findByUserName(userDto.getUserName());
+        Optional<AppUser> foundUserByEmail = repo.findByEmail(userDto.getEmail());
+
+        if (foundUserByUserName.isPresent()) throw new DuplicateResourceEntryException(userDto.getUserName());
+        if (foundUserByEmail.isPresent()) throw new DuplicateResourceEntryException(userDto.getEmail());
+
         AppUser user = mapper.map(userDto, AppUser.class);
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setCreatedAt(LocalDateTime.now());

@@ -24,7 +24,7 @@ public class AppUserDto {
 
     @NotBlank(message = "Enter Password")
     @Size(min = 8,message = "Password Must Be 8 Character")
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[#?!]).{8,}$",message = "Password Must Be Combination Of 8 Character and digit,uppercase,lowercase,special character")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[#?!@]).{8,}$",message = "Password Must Be Combination Of 8 Character and digit,uppercase,lowercase,special character")
     private String password;
 
     private LocalDateTime createdAt;

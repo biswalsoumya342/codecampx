@@ -9,11 +9,10 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ApiResponse {
-
+public class ApiErrorResponse {
     private LocalDateTime time;
 
-    private String message;
+    private String error;
 
     private Integer status;
 }
