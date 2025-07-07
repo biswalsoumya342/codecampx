@@ -16,8 +16,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 public class SecurityConfig {
 
-    private UserDetailServiceImpl userDetailService;
-    private JwtFilter jwtFilter;
+    private final UserDetailServiceImpl userDetailService;
+    private final JwtFilter jwtFilter;
 
     public SecurityConfig(UserDetailServiceImpl userDetailService, JwtFilter jwtFilter) {
         this.userDetailService = userDetailService;
@@ -28,7 +28,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http.csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(requests->
-                        requests.requestMatchers("/signup","/login").permitAll()
+                        requests.requestMatchers("/auth/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .httpBasic(basic->basic.disable())

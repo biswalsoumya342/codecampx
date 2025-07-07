@@ -1,4 +1,4 @@
-package com.codecampx.codecampx.payload;
+package com.codecampx.codecampx.payload.codesnippet;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -10,18 +10,19 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ExecutionHistoryDto {
+public class CodeSnippetDto {
+
     private String id;
 
-    @NotBlank(message = "Choose A language For Execution")
-    private  String language;
+    @NotBlank(message = "Select Code Language")
+    private String language;
 
-    @NotBlank(message = "Write Code")
+    @NotBlank(message = "Code Must Required To Save")
     private String code;
 
-    private String output;
-
-    private boolean status;
+    private boolean isShared;
 
     private LocalDateTime createdAt;
+
+    private String shareLink;
 }

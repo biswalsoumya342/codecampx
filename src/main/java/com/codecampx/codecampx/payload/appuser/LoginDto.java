@@ -1,4 +1,4 @@
-package com.codecampx.codecampx.payload;
+package com.codecampx.codecampx.payload.appuser;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

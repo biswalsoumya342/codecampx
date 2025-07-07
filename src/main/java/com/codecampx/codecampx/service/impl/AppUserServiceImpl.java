@@ -1,18 +1,26 @@
 package com.codecampx.codecampx.service.impl;
 
 import com.codecampx.codecampx.exception.DuplicateResourceEntryException;
+import com.codecampx.codecampx.exception.ResorceNotFoundException;
+import com.codecampx.codecampx.exception.UnauthorizeAccessException;
 import com.codecampx.codecampx.model.AppUser;
-import com.codecampx.codecampx.payload.AppUserDto;
-import com.codecampx.codecampx.payload.LoginDto;
+import com.codecampx.codecampx.payload.appuser.AppUserSignUpDto;
+import com.codecampx.codecampx.payload.appuser.AppUserUpdateDto;
+import com.codecampx.codecampx.payload.appuser.LoginDto;
 import com.codecampx.codecampx.repository.AppUserRepository;
 import com.codecampx.codecampx.security.JwtService;
 import com.codecampx.codecampx.service.AppUserService;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -20,11 +28,13 @@ import java.util.Optional;
 @Service
 public class AppUserServiceImpl implements AppUserService {
 
-    private AppUserRepository repo;
-    private ModelMapper mapper;
-    private AuthenticationManager manager;
-    private BCryptPasswordEncoder passwordEncoder;
-    private JwtService jwtService;
+    private static final Logger logger = LoggerFactory.getLogger(AppUserServiceImpl.class);
+
+    private final AppUserRepository repo;
+    private final ModelMapper mapper;
+    private final AuthenticationManager manager;
+    private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     public AppUserServiceImpl(AppUserRepository repo, ModelMapper mapper, AuthenticationManager manager, BCryptPasswordEncoder passwordEncoder, JwtService jwtService) {
         this.repo = repo;
@@ -34,28 +44,108 @@ public class AppUserServiceImpl implements AppUserService {
         this.jwtService = jwtService;
     }
 
+    //Signup Service
     @Override
-    public void signup(AppUserDto userDto) {
+    public boolean signup(AppUserSignUpDto userDto) {
+
         Optional<AppUser> foundUserByUserName = repo.findByUserName(userDto.getUserName());
         Optional<AppUser> foundUserByEmail = repo.findByEmail(userDto.getEmail());
-
-        if (foundUserByUserName.isPresent()) throw new DuplicateResourceEntryException(userDto.getUserName());
-        if (foundUserByEmail.isPresent()) throw new DuplicateResourceEntryException(userDto.getEmail());
+        logger.debug("Searching User With UserName: {} And Email: {}",userDto.getUserName(),userDto.getEmail());
+        if (foundUserByUserName.isPresent()){
+            logger.error("UserName: {} Already Exist So Signup Failed",userDto.getUserName());
+            throw new DuplicateResourceEntryException(userDto.getUserName());
+        }
+        if (foundUserByEmail.isPresent()){
+            logger.error("Email: {} Already Exist So Signup Failed",userDto.getEmail());
+            throw new DuplicateResourceEntryException(userDto.getEmail());
+        }
 
         AppUser user = mapper.map(userDto, AppUser.class);
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
         user.setRole("ADMIN");
-        repo.save(user);
+        AppUser isSaved = repo.save(user);
+        return !ObjectUtils.isEmpty(isSaved);
     }
 
     @Override
     public String login(LoginDto loginDto) {
+        logger.debug("Try To Login UserName: {}",loginDto.getUserName());
         Authentication authentication = manager
                 .authenticate(
                         new UsernamePasswordAuthenticationToken(
                                 loginDto.getUserName(),loginDto.getPassword()
                         ));
+        logger.info("User AuthentiCated UserName: {}",loginDto.getUserName());
         return jwtService.generateToken(authentication.getName());
+    }
+
+
+
+    //User Update Service
+    @Override
+    public boolean update(String userName, AppUserUpdateDto userDto) {
+
+        String name = SecurityContextHolder.getContext().getAuthentication().getName();
+        if(!name.equals(userName)) throw new UnauthorizeAccessException("You Are Not Allowed To Access");
+
+        logger.debug("Searching UserData With Username: {}",userName);
+        AppUser user = repo.findByUserName(userName).orElseThrow(()-> new ResorceNotFoundException("User","User Name",userName));
+
+        logger.debug("User Found With UserName: {}",user.getUserName());
+
+        //Check If The UserName Is Already Exist Or Not
+        if (userDto.getUserName()!=null && !user.getUserName().equals(userDto.getUserName())){
+            Optional<AppUser> foundUserByUserName = repo.findByUserName(userDto.getUserName());
+            logger.debug("Try Updating UserName");
+            if (foundUserByUserName.isPresent() && !foundUserByUserName.get().getId().equals(user.getId())){
+                logger.error("UserName: {} Already Exist So Update Failed",foundUserByUserName.get().getUserName());
+                throw new DuplicateResourceEntryException(userDto.getUserName());
+            }
+        }
+
+        //Check If Email Is Already Exist
+        if(userDto.getEmail()!=null && !user.getEmail().equals(userDto.getEmail())){
+            Optional<AppUser> foundUserByEmail = repo.findByEmail(userDto.getEmail());
+            logger.debug("Try Updating Email");
+            if (foundUserByEmail.isPresent() && !foundUserByEmail.get().getId().equals(user.getId())){
+                logger.error("Email: {} Already Exist So Update Failed",userDto.getEmail());
+                throw new DuplicateResourceEntryException(userDto.getEmail());
+            }
+        }
+        if (userDto.getUserName()!=null){
+            logger.debug("Setting New Username:{} For User: {}",userDto.getUserName(),userName);
+            user.setUserName(userDto.getUserName());
+        }
+        if (userDto.getEmail()!=null){
+            logger.debug("Setting New Email: {} For User: {}",userDto.getEmail(),user.getUserName());
+            user.setEmail(userDto.getEmail());
+        }
+
+        AppUser isSaved = repo.save(user);
+        return !ObjectUtils.isEmpty(isSaved);
+    }
+
+
+    //User Delete Service
+    @Override
+    public boolean delete(String userName) {
+        String name = SecurityContextHolder.getContext().getAuthentication().getName();
+        if(!name.equals(userName)) throw new UnauthorizeAccessException("You Are Not Allowed To Access");
+
+        logger.debug("Searching User With UserName: {}",userName);
+        AppUser user = repo.findByUserName(userName).orElseThrow(
+                () -> new ResorceNotFoundException("User","Username",userName)
+        );
+        repo.deleteById(user.getId());
+        AppUser checkAfterDelete = repo.findById(user.getId()).orElse(null);
+        if (checkAfterDelete!=null){
+            logger.error("User Deletion Failed!");
+            return false;
+        }else {
+            logger.info("User Deletion Successful");
+            return true;
+        }
+
     }
 }

@@ -1,4 +1,4 @@
-package com.codecampx.codecampx.payload;
+package com.codecampx.codecampx.payload.appuser;
 
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -10,9 +10,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AppUserDto {
-
-    private String id;
+public class AppUserSignUpDto {
 
     @Size(min = 6,message = "UserName Must be 6 Character Long")
     @NotBlank(message = "UserName Must Required")
@@ -27,7 +25,4 @@ public class AppUserDto {
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[#?!@]).{8,}$",message = "Password Must Be Combination Of 8 Character and digit,uppercase,lowercase,special character")
     private String password;
 
-    private LocalDateTime createdAt;
-
-    private String role;
 }

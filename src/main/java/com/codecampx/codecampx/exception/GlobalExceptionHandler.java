@@ -1,7 +1,6 @@
 package com.codecampx.codecampx.exception;
 
 import com.codecampx.codecampx.payload.ApiErrorResponse;
-import com.codecampx.codecampx.payload.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -28,8 +27,17 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(new ApiErrorResponse(LocalDateTime.now(),ex.getMessage(),HttpStatus.CONFLICT.value()),HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(value = UnauthorizeAccessException.class)
+    public ResponseEntity<?> handleUnauthorizeAccessException(UnauthorizeAccessException ex){
+        return new ResponseEntity<>(
+                new ApiErrorResponse(
+                        LocalDateTime.now(),ex.getMessage(),HttpStatus.FORBIDDEN.value()
+                ),HttpStatus.FORBIDDEN
+        );
+    }
+
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String,String>> handelMethodArgumentNotValidException(MethodArgumentNotValidException ex){
+    public ResponseEntity<Map<String,String>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex){
         Map<String,String> errors = new HashMap<>();
         BindingResult bindingResult = ex.getBindingResult();
         List<FieldError> errorList = bindingResult.getFieldErrors();
