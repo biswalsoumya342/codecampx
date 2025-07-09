@@ -6,7 +6,7 @@ public class ResorceNotFoundException extends RuntimeException{
     private String value;
 
     public ResorceNotFoundException(String resource, String field, String value) {
-        super(String.format("% Not Found With %s : %s",resource,field,value));
+        super(String.format("%s Not Found With %s : %s",resource,field,value));
         this.resource = resource;
         this.field = field;
         this.value = value;

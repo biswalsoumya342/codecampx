@@ -22,6 +22,7 @@ public class ExecutionHistory {
     @Column(nullable = false,length = 3000)
     private String code;
 
+    @Column(length = 2000)
     private String output;
 
     private boolean status;

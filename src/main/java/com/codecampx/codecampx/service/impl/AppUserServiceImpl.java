@@ -1,9 +1,12 @@
 package com.codecampx.codecampx.service.impl;
 
 import com.codecampx.codecampx.exception.DuplicateResourceEntryException;
+import com.codecampx.codecampx.exception.InvalidPasswordException;
 import com.codecampx.codecampx.exception.ResorceNotFoundException;
 import com.codecampx.codecampx.exception.UnauthorizeAccessException;
 import com.codecampx.codecampx.model.AppUser;
+import com.codecampx.codecampx.payload.ForgetPasswordPasswordDto;
+import com.codecampx.codecampx.payload.PasswordReset;
 import com.codecampx.codecampx.payload.appuser.AppUserSignUpDto;
 import com.codecampx.codecampx.payload.appuser.AppUserUpdateDto;
 import com.codecampx.codecampx.payload.appuser.LoginDto;
@@ -84,10 +87,9 @@ public class AppUserServiceImpl implements AppUserService {
 
     //User Update Service
     @Override
-    public boolean update(String userName, AppUserUpdateDto userDto) {
+    public boolean update(AppUserUpdateDto userDto) {
 
-        String name = SecurityContextHolder.getContext().getAuthentication().getName();
-        if(!name.equals(userName)) throw new UnauthorizeAccessException("You Are Not Allowed To Access");
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
 
         logger.debug("Searching UserData With Username: {}",userName);
         AppUser user = repo.findByUserName(userName).orElseThrow(()-> new ResorceNotFoundException("User","User Name",userName));
@@ -129,9 +131,8 @@ public class AppUserServiceImpl implements AppUserService {
 
     //User Delete Service
     @Override
-    public boolean delete(String userName) {
-        String name = SecurityContextHolder.getContext().getAuthentication().getName();
-        if(!name.equals(userName)) throw new UnauthorizeAccessException("You Are Not Allowed To Access");
+    public boolean delete() {
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
 
         logger.debug("Searching User With UserName: {}",userName);
         AppUser user = repo.findByUserName(userName).orElseThrow(
@@ -145,6 +146,33 @@ public class AppUserServiceImpl implements AppUserService {
         }else {
             logger.info("User Deletion Successful");
             return true;
+        }
+
+    }
+
+    //Password Reset Service
+    @Override
+    public boolean passwordReset(PasswordReset password) {
+
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        logger.debug("Authentication Allowed");
+
+        logger.debug("User Request Reach To password Rest service, UserName {}",userName);
+        AppUser user = repo.findByUserName(userName).orElseThrow(
+                ()-> new ResorceNotFoundException("User","Username",userName)
+        );
+        if (passwordEncoder.matches(password.getOldPassword(),user.getPassword())){
+            user.setPassword(passwordEncoder.encode(password.getNewPassword()));
+            AppUser isSaved = repo.save(user);
+            if (!ObjectUtils.isEmpty(isSaved)){
+                return true;
+            }else{
+                return false;
+            }
+        }
+        else {
+            throw new InvalidPasswordException("Invalid Password, Please Try Again!");
         }
 
     }
