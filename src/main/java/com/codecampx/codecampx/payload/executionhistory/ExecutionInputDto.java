@@ -15,4 +15,6 @@ public class ExecutionInputDto {
 
     @NotBlank(message = "Write Code For Execution")
     private String code;
+
+    private String input;
 }

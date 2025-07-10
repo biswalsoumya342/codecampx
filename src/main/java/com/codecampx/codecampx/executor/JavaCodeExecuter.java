@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class JavaCodeExecuter implements Executer {
@@ -16,7 +17,7 @@ public class JavaCodeExecuter implements Executer {
     Logger logger = LoggerFactory.getLogger(JavaCodeExecuter.class);
 
     @Override
-    public ExecutionOutputDto execute(Path directory, String code) throws IOException {
+    public ExecutionOutputDto execute(Path directory, String code,String input) throws IOException {
         logger.debug("Java Code Execution Started");
         Path executionPath = directory.resolve("Main.java");
         Files.writeString(executionPath,code);
@@ -39,6 +40,24 @@ public class JavaCodeExecuter implements Executer {
         ProcessBuilder runBuilder = new ProcessBuilder("java","Main");
         runBuilder.directory(directory.toFile());
         Process runProcess = runBuilder.start();
+
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(runProcess.getOutputStream()))) {
+            writer.write(input);
+            writer.flush();
+        }
+
+        //
+        boolean finished = false;
+        try {
+            finished = runProcess.waitFor(3, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+        if (!finished) {
+            runProcess.destroyForcibly();
+            return new ExecutionOutputDto("Execution Timeout", "Code took too long For Output", false);
+        }
+        //
 
         String successOutput = getStream(runProcess.getInputStream());
         logger.debug("No Error In Execution");

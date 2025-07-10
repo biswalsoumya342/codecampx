@@ -24,7 +24,7 @@ public class CodeExecuter {
 
         String language = inputDto.getLanguage();
         String code = inputDto.getCode();
-
+        String input = inputDto.getInput();
 
         Executer executer;
         logger.debug("Try To create New Temporary Directory");
@@ -48,6 +48,6 @@ public class CodeExecuter {
             }
         }
         logger.debug("Code Execution Started Here And Request Send To {} Executer",language);
-        return executer.execute(directory,code);
+        return executer.execute(directory,code,input);
     }
 }

@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ExecutionHistoryDto {
 
+    private String id;
+
     @NotBlank(message = "Choose A language For Execution")
     private  String language;
 

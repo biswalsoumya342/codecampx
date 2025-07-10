@@ -6,5 +6,5 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public interface Executer {
-    public ExecutionOutputDto execute(Path directory,String code) throws IOException;
+    public ExecutionOutputDto execute(Path directory,String code,String input) throws IOException;
 }

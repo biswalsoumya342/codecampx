@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 public class CodeSnippet {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     @Column(nullable = false)
@@ -22,6 +21,9 @@ public class CodeSnippet {
 
     @Column(nullable = false,length = 3000)
     private String code;
+
+    @Column(nullable = false,length = 3000)
+    private String description;
 
     private boolean isShared;
 

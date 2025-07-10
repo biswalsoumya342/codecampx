@@ -5,27 +5,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CodeSnippetDto {
+public class CodeSnippetInputDto {
 
-    private String id;
+    @NotBlank(message = "Select Language")
+    private  String language;
 
-    @NotBlank(message = "Select Code Language")
-    private String language;
-
-    @NotBlank(message = "Code Must Required To Save")
+    @NotBlank(message = "Write Code For Execution")
     private String code;
 
     @NotBlank(message = "Description Required")
     private String description;
-
-    private boolean isShared;
-
-    private LocalDateTime createdAt;
-
-    private String shareLink;
 }
