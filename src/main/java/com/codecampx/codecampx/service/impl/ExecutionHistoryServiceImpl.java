@@ -80,6 +80,7 @@ public class ExecutionHistoryServiceImpl implements ExecutionHistoryService {
                 );
 
         CodeSnippet snippet = new CodeSnippet();
+        snippet.setId(uuid);
         snippet.setLanguage(history.getLanguage());
         snippet.setCode(history.getCode());
         snippet.setDescription(inputDto.getDescription());

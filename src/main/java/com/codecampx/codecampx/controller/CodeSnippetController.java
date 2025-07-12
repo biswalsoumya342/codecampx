@@ -6,6 +6,7 @@ import com.codecampx.codecampx.payload.codesnippet.CodeSnippetInputDto;
 import com.codecampx.codecampx.service.CodeSnippetService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,9 +42,9 @@ public class CodeSnippetController {
         );
     }
 
-    @GetMapping("/show/{id}")
-    public ResponseEntity<?> showCodeSnippet(@PathVariable String id){
-        CodeSnippetDto snippetDto = service.showCodeSnippet(id);
+    @GetMapping(value = "/show/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> showCodeSnippet(@PathVariable String id){
+        Object snippetDto = service.showCodeSnippet(id);
         return new ResponseEntity<>(
                 snippetDto,HttpStatus.OK
         );
@@ -69,5 +70,19 @@ public class CodeSnippetController {
                     ),HttpStatus.OK
             );
         }
+    }
+
+
+    @DeleteMapping("/remove/{id}")
+    public ResponseEntity<ApiResponse> removeFromCodeSnippet(@PathVariable String id){
+        service.removeFromCodeSnippet(id);
+        return new ResponseEntity<>(
+                new ApiResponse(
+                        LocalDateTime.now(),
+                        "Removed Successful",
+                        HttpStatus.OK.value()
+                ),
+                HttpStatus.OK
+        );
     }
 }

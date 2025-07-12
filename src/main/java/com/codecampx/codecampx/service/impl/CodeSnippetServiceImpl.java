@@ -6,6 +6,7 @@ import com.codecampx.codecampx.model.AppUser;
 import com.codecampx.codecampx.model.CodeSnippet;
 import com.codecampx.codecampx.payload.codesnippet.CodeSnippetDto;
 import com.codecampx.codecampx.payload.codesnippet.CodeSnippetInputDto;
+import com.codecampx.codecampx.payload.codesnippet.CodeSnippetOutputDto;
 import com.codecampx.codecampx.repository.AppUserRepository;
 import com.codecampx.codecampx.repository.CodeSnippetRepository;
 import com.codecampx.codecampx.service.CodeSnippetService;
@@ -59,7 +60,7 @@ public class CodeSnippetServiceImpl implements CodeSnippetService {
     }
 
     @Override
-    public CodeSnippetDto showCodeSnippet(String id) {
+    public Object showCodeSnippet(String id) {
         CodeSnippet snippet = repo.findById(id).orElseThrow(
                 ()->new ResorceNotFoundException(
                         "Code Snippet","Id",""
@@ -69,13 +70,11 @@ public class CodeSnippetServiceImpl implements CodeSnippetService {
             return mapper.map(snippet,CodeSnippetDto.class);
         }else {
             if (snippet.isShared()){
-                return mapper.map(snippet,CodeSnippetDto.class);
+                return mapper.map(snippet,CodeSnippetOutputDto.class);
             }else {
                 throw new UnauthorizeAccessException("You Are Not Allowed To Access");
             }
         }
-
-
     }
 
     @Override
@@ -92,5 +91,17 @@ public class CodeSnippetServiceImpl implements CodeSnippetService {
             repo.save(snippet);
             return true;
         }
+    }
+
+    @Override
+    public void removeFromCodeSnippet(String id) {
+        CodeSnippet snippet = repo
+                .findById(id)
+                .orElseThrow(
+                        ()-> new ResorceNotFoundException(
+                                "CodeSnippet","Id",id
+                        )
+                );
+        repo.deleteById(id);
     }
 }

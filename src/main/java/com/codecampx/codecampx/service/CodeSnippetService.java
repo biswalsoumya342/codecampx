@@ -9,6 +9,7 @@ import java.util.List;
 public interface CodeSnippetService {
     public void saveToCodeSnippet(HttpServletRequest request, CodeSnippetInputDto snippetDto);
     public List<CodeSnippetDto> showCodeSnippet();
-    public CodeSnippetDto showCodeSnippet(String id);
+    public Object showCodeSnippet(String id);
     public boolean setAccess(String id);
+    public void removeFromCodeSnippet(String id);
 }
